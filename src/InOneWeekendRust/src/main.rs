@@ -1,4 +1,7 @@
 mod ray;
+mod color;
+use std::fs::File;
+use std::io::Write;
 
 /*
 #include "rtweekend.h"
@@ -95,6 +98,9 @@ fn main() {
 
 	println!("P3\n{image_width} {image_height}\n255\n");
 
+    let mut file = File::create("../image1.ppm").unwrap();
+    writeln!(file, "P3\n{} {}\n255", image_width, image_height).unwrap();
+
 	for j in 0..image_height{
 		println!("Scanlines_remaining: {}", image_height - j);
 		for i in 0..image_width{
@@ -105,10 +111,18 @@ fn main() {
 				dir: ray_direction
 			};
 			let pixel_color=ray_color(r);
+            color::write_color(&mut file, pixel_color);
 		}
 	}
 }
 
 fn ray_color(r: ray::Ray)->glam::Vec3{
-	Default::default()
+    /*
+    vec3 unit_direction = unit_vector(r.direction());
+    auto a = 0.5*(unit_direction.y() + 1.0);
+    return (1.0-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);
+   */
+       let unit_direction = r.direction().normalize();
+    let a = 0.5 * (unit_direction.y + 1.0);
+    (1.0 - a) * glam::Vec3::new(1.0, 1.0, 1.0) + a * glam::Vec3::new(0.5, 0.7, 1.0) 
 }
