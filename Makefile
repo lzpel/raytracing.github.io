@@ -14,3 +14,5 @@ generate:
 	bash -c "$${make_dirs}"
 run:
 	bash -c "$${make_dirs}"
+format:
+	bash -c "$${make_dirs}"

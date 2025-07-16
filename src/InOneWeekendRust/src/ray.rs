@@ -38,7 +38,7 @@ mod tests {
 	use super::*;
 	#[test]
 	fn at() {
-		let r=Ray{
+		let r = Ray {
 			orig: glam::Vec3::new(0.0, 1.0, 2.0),
 			dir: glam::Vec3::new(1.0, 0.0, 0.0),
 		};

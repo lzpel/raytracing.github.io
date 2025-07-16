@@ -1,4 +1,6 @@
 generate:
-	cargo fmt
+	@:
 run:
 	cargo run
+format:
+	cargo fmt
