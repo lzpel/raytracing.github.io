@@ -125,19 +125,26 @@ fn main() {
 }
 
 fn ray_color(r: &ray::Ray) -> glam::Vec3 {
-	if hit_sphere(glam::Vec3::new(0., 0., -1.), 0.5, r) {
-		return glam::Vec3::new(1., 0., 0.);
+    let c=glam::Vec3::new(0., 0., -1.);
+    let t=hit_sphere(c, 0.5, r);
+	if  t>0.{
+        let n=(r.at(t)-c).normalize();
+		return 0.5*(n+glam::Vec3::new(1.,1.,1.))
 	}
 	let unit_direction = r.direction().normalize();
 	let a = 0.5 * (unit_direction.y + 1.0);
 	(1.0 - a) * glam::Vec3::new(1.0, 1.0, 1.0) + a * glam::Vec3::new(0.5, 0.7, 1.0)
 }
 
-pub fn hit_sphere(center: glam::Vec3, radius: f32, r: &ray::Ray) -> bool {
-	let oc = r.origin() - center;
+pub fn hit_sphere(center: glam::Vec3, radius: f32, r: &ray::Ray) -> f32 {
+	let oc = center - r.origin();
 	let a = r.direction().dot(r.direction());
 	let b = -2.0 * r.direction().dot(oc);
 	let c = oc.dot(oc) - radius * radius;
 	let discriminant = b * b - 4.0 * a * c;
-	discriminant >= 0.0
+    if discriminant < 0. {
+        return -1.0;
+    } else {
+        return (-b - discriminant.sqrt() ) / (2.0*a);
+    }
 }
