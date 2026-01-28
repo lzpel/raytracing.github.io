@@ -1,7 +1,6 @@
 mod color;
 mod ray;
-use std::fs::File;
-use std::io::Write;
+use image::RgbImage;
 
 /*
 #include "rtweekend.h"
@@ -103,10 +102,7 @@ fn main() {
 
 	//Render
 
-	println!("P3\n{image_width} {image_height}\n255\n");
-
-	let mut file = File::create("../../image1.ppm").unwrap();
-	writeln!(file, "P3\n{} {}\n255", image_width, image_height).unwrap();
+	let mut img = RgbImage::new(image_width as u32, image_height as u32);
 
 	for j in 0..image_height {
 		println!("Scanlines_remaining: {}", image_height - j);
@@ -119,9 +115,12 @@ fn main() {
 				dir: ray_direction,
 			};
 			let pixel_color = ray_color(&r);
-			color::write_color(&mut file, pixel_color);
+			let rgb = color::to_rgb(pixel_color);
+			img.put_pixel(i as u32, j as u32, rgb);
 		}
 	}
+
+	img.save("../../image1.png").unwrap();
 }
 
 fn ray_color(r: &ray::Ray) -> glam::Vec3 {
