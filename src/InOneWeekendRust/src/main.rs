@@ -60,7 +60,7 @@ fn main() {
     // 左球・内側バブル（負の半径 → 法線が内向きになり空気層の内面を形成）
     world.add(Sphere::new(
         glam::Vec3::new(-1.0, 0.0, -1.0),
-        -0.4,
+        0.4,
         mat_bubble,
     ));
     // 右球（Metal）
