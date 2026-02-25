@@ -1,19 +1,21 @@
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
+use crate::material::MatPtr;
 use crate::ray::Ray;
 
 pub struct Sphere {
     pub center: glam::Vec3,
+    /// 正の半径: 通常の球。
+    /// 負の半径: 法線が内側を向くため「中空ガラス」の内側面として使える（11.5節）。
     pub radius: f32,
+    /// 球のマテリアル
+    pub mat: MatPtr,
 }
 
 impl Sphere {
-    pub fn new(center: glam::Vec3, radius: f32) -> Self {
-        Sphere {
-            center,
-            // 負の半径は意味を持たないので 0 以上に補正する
-            radius: radius.max(0.0),
-        }
+    pub fn new(center: glam::Vec3, radius: f32, mat: MatPtr) -> Self {
+        // 負の半径は中空ガラスの内側面に使うため、意図的にそのまま保持する
+        Sphere { center, radius, mat }
     }
 }
 
@@ -47,12 +49,14 @@ impl Hittable for Sphere {
 
         let p = r.at(root);
         // 球面の外向き法線 = (交点 - 中心) / 半径
+        // radius が負のとき、この除算で法線の向きが反転する（中空球の内側面の実現）
         let outward_normal = (p - self.center) / self.radius;
         let mut rec = HitRecord {
             p,
             normal: glam::Vec3::ZERO,
             t: root,
             front_face: false,
+            mat: self.mat.clone(),
         };
         // レイの進行方向に応じて法線を表側に向ける
         rec.set_face_normal(r, outward_normal);

@@ -109,7 +109,8 @@ fn sample_square() -> glam::Vec2 {
 }
 
 /// レイの色を再帰的に計算する。
-/// オブジェクトに当たった場合は拡散反射、当たらなければ背景グラデーションを返す。
+/// オブジェクトに当たった場合はマテリアルの scatter() に散乱を委譲し、
+/// 当たらなければ背景グラデーションを返す。
 fn ray_color(r: &Ray, depth: u32, world: &dyn Hittable) -> glam::Vec3 {
     // 反射回数の上限に達したら光の寄与なし（黒）
     if depth == 0 {
@@ -117,49 +118,18 @@ fn ray_color(r: &Ray, depth: u32, world: &dyn Hittable) -> glam::Vec3 {
     }
 
     // t_min = 0.001: 浮動小数点誤差で自己交差（シャドウアクネ）が起きないよう
-    // 交点のごく近傍を無視する（section 9.3）
+    // 交点のごく近傍を無視する
     if let Some(rec) = world.hit(r, Interval::new(0.001, f32::INFINITY)) {
-        // True Lambertian 拡散反射（section 9.4）:
-        // 法線方向にランダム単位ベクトルを加えた方向に散乱する
-        let mut direction = rec.normal + random_unit_vector();
-        // 散乱方向がほぼゼロベクトルになる縮退ケースを防ぐ
-        if near_zero(direction) {
-            direction = rec.normal;
+        // マテリアルに散乱処理を委譲する。
+        // scatter() が Some((attenuation, scattered)) を返したら再帰、None なら吸収（黒）。
+        if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
+            return attenuation * ray_color(&scattered, depth - 1, world);
         }
-        let scattered = Ray {
-            orig: rec.p,
-            dir: direction,
-        };
-        // 反射のたびに 50% 減衰させて再帰
-        return 0.5 * ray_color(&scattered, depth - 1, world);
+        return glam::Vec3::ZERO;
     }
 
     // 何にも当たらなかった場合: 空の青〜白グラデーション（背景）
     let unit_direction = r.direction().normalize();
     let a = 0.5 * (unit_direction.y + 1.0); // y が高いほど青み
     (1.0 - a) * glam::Vec3::new(1.0, 1.0, 1.0) + a * glam::Vec3::new(0.5, 0.7, 1.0)
-}
-
-/// 単位球内のランダムな単位ベクトルを棄却サンプリングで生成する。
-/// [-1,1]³ の立方体内に一様乱数を生成し、単位球の内側に収まるまで繰り返す。
-fn random_unit_vector() -> glam::Vec3 {
-    let mut rng = rand::thread_rng();
-    loop {
-        let p = glam::Vec3::new(
-            rng.gen_range(-1.0_f32..1.0),
-            rng.gen_range(-1.0_f32..1.0),
-            rng.gen_range(-1.0_f32..1.0),
-        );
-        let lensq = p.length_squared();
-        // lensq が極端に小さい場合は正規化時にオーバーフローする恐れがあるため除外
-        if 1e-160_f32 < lensq && lensq <= 1.0 {
-            return p / lensq.sqrt(); // 正規化して単位ベクトルにする
-        }
-    }
-}
-
-/// ベクトルの全成分が極めて小さいか判定する（縮退方向の検出用）
-fn near_zero(v: glam::Vec3) -> bool {
-    let s = 1e-8_f32;
-    v.x.abs() < s && v.y.abs() < s && v.z.abs() < s
 }
