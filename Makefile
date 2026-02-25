@@ -1,15 +1,8 @@
-define make_dirs
-dirs="src/InOneWeekendRust"
-if [ -n "$$parallel" ]; then
-	trap "kill 0" EXIT
-	for dir in $$dirs; do
-		$(MAKE) -C $$dir $@ & done
-	wait
-else
-	time echo $$dirs | xargs -n 1 | xargs -IX sh -c "$(MAKE) -C X $@ || exit 255"
-fi
+MAKE_RECURSIVE_DIRS := src/InOneWeekendRust
+define MAKE_RECURSIVE
+	time printf '%s\n' $(MAKE_RECURSIVE_DIRS) | xargs -IX sh -c '$(MAKE) -C X $@ || exit 255'
 endef
-export make_dirs
+export
 generate:
 	bash -c "$${make_dirs}"
 run:

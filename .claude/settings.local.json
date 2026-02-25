@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:raytracing.github.io)",
+      "Bash(cd \"C:/Users/0107411268.SIE/raytracing.github.io/src/InOneWeekendRust\" && cargo build 2>&1)",
+      "Bash(tail:*)"
+    ]
+  }
+}
