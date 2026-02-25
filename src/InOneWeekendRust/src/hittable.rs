@@ -1,4 +1,5 @@
 use crate::interval::Interval;
+use crate::material::MatPtr;
 use crate::ray::Ray;
 
 /// レイがオブジェクトに当たったときの情報
@@ -11,6 +12,8 @@ pub struct HitRecord {
     pub t: f32,
     /// レイがオブジェクトの表面（外側）から当たったか
     pub front_face: bool,
+    /// 交点のマテリアル（散乱処理に使う）
+    pub mat: MatPtr,
 }
 
 impl HitRecord {
